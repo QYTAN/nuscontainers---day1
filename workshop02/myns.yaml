@@ -1,0 +1,31 @@
+#api version = group + version. If group is not 'core', then include the group, like app/v1
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: myns
+    labels:
+      dept: engineering
+      app: fortune
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fortune-pod
+  namespace: myns
+  labels:
+    dept: engineering
+    app: fortune
+spec:
+  containers:
+  - name: fortune-container
+    image: tanqiyang/fortune:02fd79b
+    imagePullPolicy: IfNotPresent
+    #configure the image to port 8080 (overwrite docker file env variable). inner
+    env:
+    - name: APP_PORT
+      value: "8080"
+    #exposing pod to 8080. outer
+    ports:
+    - name: http-port
+      containerPort: 8080
