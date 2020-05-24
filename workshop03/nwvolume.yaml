@@ -1,0 +1,20 @@
+#Doing the dynamic way. Using pvc to claim the storage and automatically create the volume
+#pvc can only be created once
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nwdb-pvc
+  labels: 
+    app: northwind
+
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  #type in command line kubectl get sc
+  #for digital ocean cloud default is do-block-storage. For local or others, it might be different
+  storageClassName: do-block-storage
+  #Specify volume name if we are doing manual way
+  #volumeName:

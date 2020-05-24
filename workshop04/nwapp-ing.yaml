@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+   name: nwapp-ing
+   labels:
+      app: northwind
+   #from nginx ingress docs: https://kubernetes.github.io/ingress-nginx/user-guide/basic-usage/
+   annotations:
+      kubernetes.io/ingress.class: "nginx"
+   
+spec:
+   rules:
+     #expose to ip of ingress kubectl.exe get svc -n nginx-ingress
+     #kubectl.exe get svc -n nginx-ingress
+   - host: "v1.nwapp.167.172.6.64.nip.io"
+     http:
+         paths:
+         - path: /
+           backend:
+               #ingress routes to this the service 
+               serviceName: nwapp-svc
+               servicePort: 8080
+   - host: "v2.nwapp.167.172.6.64.nip.io"
+     http:
+         paths:               
+         - path: /
+           backend:
+              serviceName: nwappv2-svc
+              servicePort: 8080
+
+#USE THIS IF WE WANT TO REWRITE THE INGRESS FANOUT- SLIDE 25 in powerpoint
+# apiVersion: networking.k8s.io/v1beta1
+# kind: Ingress
+# metadata:
+#    name: nwapp-ing
+#    labels:
+#       app: northwind
+#    #from nginx ingress docs: https://kubernetes.github.io/ingress-nginx/user-guide/basic-usage/
+#    annotations:
+#       kubernetes.io/ingress.class: "nginx"
+#       nginx.ingress.kubernetes.io/rewrite-target: /$2
+   
+# spec:
+#    rules:
+#      #expose to ip of ingress kubectl.exe get svc -n nginx-ingress
+#      #kubectl.exe get svc -n nginx-ingress
+#    - host: "nwapp.167.172.6.64.nip.io"
+#      http:
+#          paths:
+#          - path: /v1(/|$)(.*)  
+#            backend:
+#                #ingress routes to this the service 
+#                serviceName: nwapp-svc
+#                servicePort: 8080
+#          - path: /v2(/|$)(.*)
+#            backend:
+#               serviceName: nwappv2-svc
+#               servicePort: 8080

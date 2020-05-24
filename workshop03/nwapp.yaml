@@ -27,7 +27,6 @@ spec:
       #all pods with label nwapp-pod will be managed by deployment with matchLabels: app: nwapp-pod
       matchLabels:
          app: nwapp-pod
-   # pod template
    template:
       metadata:
          name: nwapp-pod 
@@ -37,8 +36,12 @@ spec:
       #information from image(dockerfile)
          containers:
          - name: nwapp-container
-           image: chukmunnlee/nwapp:v1
+           image: tanqiyang/nwapp:v1
            imagePullPolicy: IfNotPresent
+           #scales the pod automatically if threshold is breached
+           resources:
+               requests: 
+                  cpu: 100m
            #setting env variable for container
            env:
            - name: DB_USER
@@ -80,13 +83,58 @@ metadata:
     app: northwind
 
 spec:
-  #type: ClusterIP
+  type: ClusterIP
   #type=LoadBalancer will provide both Cluster IP and a LoadBalancer
   #LoadBalancer is provided by the cloud
-  type: LoadBalancer
+  #type: LoadBalancer
   selector:
     app: nwapp-pod
   ports:
   - name: app-port
     port: 8080
     targetPort: nwapp-port
+
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+   name: nwapp-hpa
+   labels:
+      app: northwind
+
+spec:
+   #pod replicas
+   minReplicas: 2
+   maxReplicas: 5
+   targetCPUUtilizationPercentage: 20
+   scaleTargetRef:
+      apiVersion: apps/v1
+      #we want to scale the deployment
+      kind: Deployment
+      name: nwapp-deploy
+
+
+#REFACTOR INGRESS TO ANOTHER FILE - nwapp-ing.yaml
+# ---
+# apiVersion: networking.k8s.io/v1beta1
+# kind: Ingress
+# metadata:
+#    name: nwapp-ing
+#    labels:
+#       app: northwind
+#    #from nginx ingress docs: https://kubernetes.github.io/ingress-nginx/user-guide/basic-usage/
+#    annotations:
+#       kubernetes.io/ingress.class: "nginx"
+   
+# spec:
+#    rules:
+#      #expose to ip of ingress kubectl.exe get svc -n nginx-ingress
+#      #kubectl.exe get svc -n nginx-ingress
+#    - host: "nwapp.167.172.6.64.nip.io"
+#      http:
+#          paths:
+#          - path: /
+#            backend:
+#                #ingress routes to this the service 
+#                serviceName: nwapp-svc
+#                servicePort: app-port
